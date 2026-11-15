@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#120a06" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="description" content="Kursi Kurukshetra: a political satire street fighter with an original cast of fictional netas." />
+  <title>Kursi Kurukshetra — Neta Fighter</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="game" width="1280" height="720"></canvas>
+
+    <!-- TITLE -->
+    <section id="screen-title" class="screen active">
+      <div class="title-wrap">
+        <div class="title-kicker">एक व्यंग्य युद्ध · A SATIRE BRAWL</div>
+        <h1 class="logo"><span>KURSI</span><span class="logo-2">KURUKSHETRA</span></h1>
+        <div class="title-sub">THE BATTLE FOR THE CHAIR</div>
+        <div class="title-menu">
+          <button class="btn big" data-action="vs-cpu">⚔ VS CPU</button>
+          <button class="btn big" data-action="vs-2p">👥 LOCAL 2 PLAYER</button>
+          <button class="btn ghost" data-action="how">CONTROLS</button>
+        </div>
+        <div class="press">PRESS ENTER / TAP TO START</div>
+        <p class="fine">Political satire and parody. Every character is fictional. Any resemblance to a real person is coincidental.</p>
+      </div>
+    </section>
+
+    <!-- SELECT -->
+    <section id="screen-select" class="screen">
+      <div class="select-head">
+        <h2>CHOOSE YOUR NETA</h2>
+        <div class="select-mode" id="select-mode">1P vs CPU</div>
+      </div>
+      <div class="select-body">
+        <div class="preview" id="preview-p1">
+          <canvas width="360" height="440"></canvas>
+          <div class="pv-tag">P1</div>
+          <div class="pv-name"></div>
+          <div class="pv-title"></div>
+          <div class="pv-quote"></div>
+        </div>
+        <div class="grid-col">
+          <div class="roster-grid" id="roster-grid"></div>
+          <div class="options">
+            <div class="opt"><span>STAGE</span><div class="seg" id="opt-stage"></div></div>
+            <div class="opt" id="opt-cpu-wrap"><span>CPU</span><div class="seg" id="opt-cpu"></div></div>
+          </div>
+          <div class="select-actions">
+            <button class="btn ghost" data-action="back">‹ BACK</button>
+            <button class="btn big" id="btn-fight" data-action="fight">FIGHT!</button>
+          </div>
+          <div class="hint" id="select-hint">Tap a face for P1, then again for the opponent · ←/→ P1 · ↑/↓ opponent · Enter to fight</div>
+        </div>
+        <div class="preview right" id="preview-p2">
+          <canvas width="360" height="440"></canvas>
+          <div class="pv-tag">CPU</div>
+          <div class="pv-name"></div>
+          <div class="pv-title"></div>
+          <div class="pv-quote"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTROLS -->
+    <section id="screen-how" class="screen modal">
+      <div class="panel">
+        <h2>CONTROLS</h2>
+        <div class="cols">
+          <div>
+            <h3>PLAYER 1</h3>
+            <p><b>Move</b> A / D · <b>Jump</b> W · <b>Crouch</b> S<br/><b>Block</b> hold back (away from enemy)</p>
+            <p><b>Punch</b> J · <b>Kick</b> K · <b>Grab</b> I · <b>Super</b> L or Space</p>
+            <p class="dim">In 1P mode the arrow keys also move P1.</p>
+          </div>
+          <div>
+            <h3>PLAYER 2 (local)</h3>
+            <p><b>Move</b> Arrow keys<br/><b>Punch</b> , or Num1 · <b>Kick</b> . or Num2<br/><b>Grab</b> / or Num3 · <b>Super</b> ; or Num0</p>
+          </div>
+          <div>
+            <h3>MOVES</h3>
+            <p><b>Specials</b> (need a motion, 3s cooldown)<br/>↓ ↘ → + Punch · ↓ ↘ → + Kick · ↓ ↙ ← + Punch</p>
+            <p><b>Sweep</b> ↓ + Kick · <b>Combos</b> P,P,P · P,P,K · P,K,K · K,K</p>
+            <p><b>Super</b> when the VOTE BANK is full. Taking hits fills it faster (even faster when you're behind). Grab dropping <b>ballot boxes</b> for +30%.</p>
+            <p><b>Esc</b> pause · <b>M</b> music · <b>N</b> mute · <b>V</b> voice lines</p>
+          </div>
+        </div>
+        <button class="btn" data-action="close-how">GOT IT</button>
+      </div>
+    </section>
+
+    <!-- PAUSE -->
+    <section id="screen-pause" class="screen modal">
+      <div class="panel small">
+        <h2>CHAI BREAK ☕</h2>
+        <p class="dim">House adjourned till further notice.</p>
+        <button class="btn" data-action="resume">RESUME</button>
+        <button class="btn ghost" data-action="toggle-sound" id="btn-sound">SOUND: ON</button>
+        <button class="btn ghost" data-action="toggle-voice" id="btn-voice">VOICE LINES: ON</button>
+        <button class="btn ghost" data-action="quit">QUIT TO SELECT</button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="screen-results" class="screen modal">
+      <div class="panel results">
+        <div class="paper">
+          <div class="paper-mast">THE KURSI TIMES <span>· LATE CITY EDITION ·</span></div>
+          <div class="paper-head" id="res-head"></div>
+          <div class="paper-body" id="res-body"></div>
+        </div>
+        <div class="res-win" id="res-win"></div>
+        <div class="res-quote" id="res-quote"></div>
+        <div class="row">
+          <button class="btn" data-action="rematch">REMATCH</button>
+          <button class="btn ghost" data-action="quit">CHARACTER SELECT</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOUCH CONTROLS -->
+    <div id="touch" class="touch">
+      <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
+      <div class="tbtns">
+        <button data-b="punch" class="tb p">PUNCH</button>
+        <button data-b="kick" class="tb k">KICK</button>
+        <button data-b="grab" class="tb g">GRAB</button>
+        <button data-b="super" class="tb s">SUPER</button>
+      </div>
+      <button class="tpause" data-action="pause">❚❚</button>
+    </div>
+
+    <div id="rotate" class="rotate"><div>📱↻<h2>ROTATE YOUR PHONE</h2><p>Kursi Kurukshetra is played in landscape.</p></div></div>
+  </div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
