@@ -170,3 +170,10 @@ html, body { margin: 0; height: 100%; background: #0b0604; overflow: hidden; col
 .rank-news { width: 100%; text-align: left; font-family: Georgia, serif; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
 .rank-news div { background: var(--paper); color: #1d140c; padding: 5px 10px; border-radius: 2px; }
 @media (max-height: 520px) { .rank-table { font-size: 12px; } .rank-news { display: none; } }
+
+/* roster tabs */
+.roster-tabs { justify-content: center; }
+.roster-tabs button { font-size: 20px; padding: 2px 22px 0; letter-spacing: 3px; }
+@media (max-height: 520px) { .roster-tabs button { font-size: 4vh; padding: 0.2vh 3vh 0; } }
+
+.cell .nm { overflow-wrap: anywhere; }

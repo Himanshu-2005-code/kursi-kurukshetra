@@ -222,6 +222,27 @@ function drawProp(ctx, kind, look) {
       capsule(ctx, [0, -6], [0, 8], 4, 4, '#7b1f1f', 0.3);
       ctx.fillStyle = '#333'; ctx.fillRect(-9, 8, 18, 7);
       break;
+    case 'briefcase': {
+      const bg = ctx.createLinearGradient(-16, 8, 16, 30);
+      bg.addColorStop(0, '#5a3a20'); bg.addColorStop(1, '#2a180c');
+      ctx.fillStyle = bg; ctx.strokeStyle = '#1a0e06'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.roundRect(-17, 8, 34, 24, 3); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#c9a23a'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-6, 8); ctx.lineTo(-6, 3); ctx.lineTo(6, 3); ctx.lineTo(6, 8); ctx.stroke();
+      ctx.fillStyle = '#d4af37'; ctx.fillRect(-12, 14, 5, 3); ctx.fillRect(7, 14, 5, 3);
+      break;
+    }
+    case 'baton':
+      ctx.rotate(-0.5);
+      capsule(ctx, [0, -4], [0, 40], 3.2, 3.6, '#6b3d1c', 0.3);
+      ctx.fillStyle = '#c9a23a'; ctx.fillRect(-3.5, 34, 7, 4);
+      break;
+    case 'revolver':
+      ctx.rotate(-1.5);
+      ctx.fillStyle = '#5a3418'; ctx.beginPath(); ctx.roundRect(-4, -2, 8, 14, 3); ctx.fill();
+      ctx.fillStyle = '#6e7378'; ctx.fillRect(-5, -8, 26, 6); ctx.fillRect(-4, -9, 10, 9);
+      ctx.fillStyle = '#9aa0a6'; ctx.fillRect(-5, -8, 26, 2);
+      ctx.fillStyle = '#3a3e42'; ctx.beginPath(); ctx.arc(1, -4, 4, 0, 7); ctx.fill();
+      break;
   }
   ctx.restore();
 }
@@ -681,6 +702,41 @@ function drawHead(ctx, S, look, pose, opts) {
   } else if (look.headwear === 'cap') {
     ctx.fillStyle = look.capColor || '#f4f4f4'; ctx.strokeStyle = '#888'; ctx.lineWidth = 1.2;
     ctx.beginPath(); ctx.moveTo(-R * 0.8, -R * 0.55); ctx.lineTo(-R * 0.6, -R * 1.18); ctx.lineTo(R * 0.75, -R * 1.05); ctx.lineTo(R * 0.85, -R * 0.45); ctx.closePath(); ctx.fill(); ctx.stroke();
+  } else if (look.headwear === 'policecap') {
+    // peaked uniform cap with badge
+    const pc = '#a8955e';
+    const cg = ctx.createLinearGradient(0, -R * 1.45, 0, -R * 0.5);
+    cg.addColorStop(0, shade(pc, 0.2)); cg.addColorStop(1, shade(pc, -0.25));
+    ctx.fillStyle = cg; ctx.strokeStyle = shade(pc, -0.55); ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(-R * 0.9, -R * 0.6); ctx.quadraticCurveTo(-R * 1.0, -R * 1.45, R * 0.2, -R * 1.42); ctx.quadraticCurveTo(R * 1.05, -R * 1.35, R * 0.95, -R * 0.62); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#1b1b1b'; ctx.fillRect(-R * 0.88, -R * 0.72, R * 1.82, R * 0.16);
+    ctx.fillStyle = '#111'; ctx.beginPath(); ctx.ellipse(R * 0.95, -R * 0.58, R * 0.55, R * 0.12, 0.12, 0, 7); ctx.fill();
+    blob(ctx, R * 0.42, -R * 1.0, R * 0.16, R * 0.18, '#d4af37', 0, 0.6);
+  } else if (look.headwear === 'cowboy') {
+    const hc = '#7a4a26';
+    const cg = ctx.createLinearGradient(0, -R * 1.8, 0, -R * 0.5);
+    cg.addColorStop(0, shade(hc, 0.2)); cg.addColorStop(1, shade(hc, -0.3));
+    ctx.fillStyle = cg; ctx.strokeStyle = shade(hc, -0.55); ctx.lineWidth = 1.4;
+    // brim
+    ctx.beginPath(); ctx.ellipse(R * 0.05, -R * 0.62, R * 1.65, R * 0.3, 0.05, 0, 7); ctx.fill(); ctx.stroke();
+    // crown with a pinch
+    ctx.beginPath(); ctx.moveTo(-R * 0.85, -R * 0.68); ctx.quadraticCurveTo(-R * 0.95, -R * 1.65, -R * 0.2, -R * 1.55); ctx.quadraticCurveTo(0, -R * 1.35, R * 0.25, -R * 1.58); ctx.quadraticCurveTo(R * 0.95, -R * 1.65, R * 0.88, -R * 0.68); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#2a1a10'; ctx.fillRect(-R * 0.86, -R * 0.86, R * 1.74, R * 0.16);
+  } else if (look.headwear === 'fedora') {
+    const hc = '#4a4238';
+    const cg = ctx.createLinearGradient(0, -R * 1.6, 0, -R * 0.5);
+    cg.addColorStop(0, shade(hc, 0.18)); cg.addColorStop(1, shade(hc, -0.3));
+    ctx.fillStyle = cg; ctx.strokeStyle = shade(hc, -0.6); ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.moveTo(-R * 1.25, -R * 0.62); ctx.quadraticCurveTo(R * 0.1, -R * 0.82, R * 1.35, -R * 0.48); ctx.quadraticCurveTo(R * 0.1, -R * 0.5, -R * 1.25, -R * 0.62); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-R * 0.82, -R * 0.68); ctx.quadraticCurveTo(-R * 0.85, -R * 1.45, -R * 0.1, -R * 1.42); ctx.lineTo(R * 0.1, -R * 1.3); ctx.quadraticCurveTo(R * 0.85, -R * 1.42, R * 0.85, -R * 0.66); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#1a1612'; ctx.fillRect(-R * 0.84, -R * 0.84, R * 1.7, R * 0.14);
+  } else if (look.headwear === 'bandana') {
+    const bc = look.capColor || '#b3121b';
+    ctx.fillStyle = bc; ctx.strokeStyle = shade(bc, -0.5); ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(-R * 0.9, -R * 0.45); ctx.quadraticCurveTo(0, -R * 0.82, R * 0.92, -R * 0.42); ctx.lineTo(R * 0.9, -R * 0.24); ctx.quadraticCurveTo(0, -R * 0.62, -R * 0.88, -R * 0.24); ctx.closePath(); ctx.fill(); ctx.stroke();
+    // knot tails at the back
+    ctx.beginPath(); ctx.moveTo(-R * 0.88, -R * 0.36); ctx.lineTo(-R * 1.45, -R * 0.1); ctx.lineTo(-R * 1.3, R * 0.05); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-R * 0.88, -R * 0.3); ctx.lineTo(-R * 1.25, R * 0.25); ctx.lineTo(-R * 1.08, R * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke();
   }
   ctx.restore();
 }
@@ -775,6 +831,10 @@ function hairStrands(ctx, R, c) {
 // shapes a solid, three-dimensional read.
 let RES = 1.5;
 export function setRenderScale(r) { RES = r; }
+// 2 = full lighting with rim light, 1 = lighting without rim, 0 = flat shading only.
+let QUALITY = 2;
+export function setQuality(q) { QUALITY = q; }
+export function getQuality() { return QUALITY; }
 const layers = {};
 function layer(name, w, h) {
   let c = layers[name];
@@ -784,14 +844,16 @@ function layer(name, w, h) {
 }
 
 export function drawFighter(ctx, look, pose, x, y, facing, opts = {}) {
-  if (opts.raw) return drawFighterRaw(ctx, look, pose, x, y, facing, opts);
+  if (opts.raw || (QUALITY === 0 && !(opts.flash > 0.01))) return drawFighterRaw(ctx, look, pose, x, y, facing, opts);
   const sc = opts.scale || 1;
-  const LW = Math.ceil(560 * sc * RES), LH = Math.ceil(600 * sc * RES);
+  // Keep the layer just big enough for the body: lighting cost scales with its area.
+  const wideU = pose.rot ? 560 : 400, tallU = 370 * (look.height || 1);
+  const LW = Math.ceil(wideU * sc * RES), LH = Math.ceil(tallU * sc * RES);
   const L = layer('main', LW, LH), fc = L.getContext('2d');
   fc.setTransform(1, 0, 0, 1, 0, 0);
   fc.globalCompositeOperation = 'source-over'; fc.globalAlpha = 1;
   fc.clearRect(0, 0, LW, LH);
-  const ox = 280 * sc, oy = 530 * sc; // feet position inside the layer (unscaled units)
+  const ox = (wideU / 2) * sc, oy = (tallU - 34) * sc; // feet position inside the layer (unscaled units)
   fc.setTransform(RES, 0, 0, RES, 0, 0);
   drawFighterRaw(fc, look, pose, ox, oy, facing, { ...opts, alpha: 1 });
   fc.setTransform(1, 0, 0, 1, 0, 0);
@@ -811,19 +873,19 @@ export function drawFighter(ctx, look, pose, x, y, facing, opts = {}) {
   fc.fillStyle = hg; fc.fillRect(0, 0, LW, LH);
 
   // rim light: silhouette minus a shifted silhouette leaves a thin edge
-  if (opts.rim !== false) {
+  if (opts.rim !== false && QUALITY >= 2) {
     const R = layer('rim', LW, LH), rc = R.getContext('2d');
     rc.setTransform(1, 0, 0, 1, 0, 0);
     rc.globalCompositeOperation = 'source-over'; rc.clearRect(0, 0, LW, LH);
-    rc.drawImage(L, 0, 0);
+    rc.drawImage(L, 0, 0, LW, LH, 0, 0, LW, LH);
     rc.globalCompositeOperation = 'source-in';
     rc.fillStyle = opts.rimColor || 'rgba(255,214,150,0.85)'; rc.fillRect(0, 0, LW, LH);
     rc.globalCompositeOperation = 'destination-out';
     const sh = 2.4 * RES * Math.min(1, sc);
-    rc.drawImage(L, sh * facing, -sh * 0.6);
+    rc.drawImage(L, 0, 0, LW, LH, sh * facing, -sh * 0.6, LW, LH);
     fc.globalCompositeOperation = 'source-atop';
     fc.globalAlpha = 0.6;
-    fc.drawImage(R, 0, 0);
+    fc.drawImage(R, 0, 0, LW, LH, 0, 0, LW, LH);
     fc.globalAlpha = 1;
   }
   if (opts.flash > 0.01) {

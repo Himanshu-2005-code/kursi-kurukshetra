@@ -2,7 +2,7 @@ import { Input, Pad, isTouchDevice } from './input.js';
 import { audio } from './audio.js';
 import { ROSTER, altLook } from './roster.js';
 import { STAGES, StageRenderer, W, H, GROUND } from './stages.js';
-import { drawFighter, drawPortrait, idlePose, POSES, mkPose, setRenderScale } from './rig.js';
+import { drawFighter, drawPortrait, idlePose, POSES, mkPose, setRenderScale, setQuality, getQuality } from './rig.js';
 import { Fight } from './fight.js';
 import { CPU } from './ai.js';
 
@@ -25,7 +25,7 @@ const store = {
 const state = {
   screen: 'title',
   mode: 'cpu',
-  p1: 0, p2: 1, picking: 0,
+  p1: 0, p2: 1, picking: 0, tab: 'neta',
   stage: store.get('kk-stage', 0),
   level: store.get('kk-level', 'normal'),
   bossUnlocked: store.get('kk-boss', false),
@@ -91,7 +91,9 @@ function buildSelect() {
   const grid = $('#roster-grid');
   grid.innerHTML = '';
   ROSTER.forEach((c, i) => {
+    if ((c.group || 'neta') !== state.tab) return;
     const cell = document.createElement('div');
+    cell.dataset.i = i;
     cell.className = 'cell' + (available(i) ? '' : ' locked');
     const cv = document.createElement('canvas'); cv.width = 160; cv.height = 160;
     const cg = cv.getContext('2d');
@@ -117,6 +119,7 @@ function buildSelect() {
       el.appendChild(b);
     });
   };
+  seg($('#roster-tabs'), [['neta', 'NETAS'], ['filmy', 'FILMY']], state.tab, (v) => { state.tab = v; buildSelect(); });
   seg($('#opt-stage'), STAGES.map((s, i) => [i, s.name]), state.stage, (v) => { state.stage = v; store.set('kk-stage', v); buildSelect(); });
   seg($('#opt-cpu'), [['easy', 'EASY'], ['normal', 'NORMAL'], ['hard', 'HARD']], state.level, (v) => { state.level = v; store.set('kk-level', v); buildSelect(); });
   backdrop.stage = new StageRenderer(STAGES[state.stage].id);
@@ -127,7 +130,8 @@ let hintTimer;
 function flashHint(t) { const h = $('#select-hint'); const old = h.dataset.orig || h.textContent; h.dataset.orig = old; h.textContent = t; h.style.opacity = 1; clearTimeout(hintTimer); hintTimer = setTimeout(() => { h.textContent = old; h.style.opacity = ''; }, 2200); }
 
 function refreshSelect() {
-  document.querySelectorAll('.cell').forEach((c, i) => {
+  document.querySelectorAll('.cell').forEach((c) => {
+    const i = Number(c.dataset.i);
     c.classList.toggle('p1', i === state.p1); c.classList.toggle('p2', i === state.p2);
     c.querySelectorAll('.badge').forEach((b) => b.remove());
     if (i === state.p1) { const b = document.createElement('div'); b.className = 'badge b1'; b.textContent = 'P1'; c.appendChild(b); }
@@ -307,13 +311,26 @@ function tick() {
   }
 }
 
+// Adaptive quality: if drawing a fight frame is consistently slow on this
+// device, step the character lighting down so the game stays smooth.
+const perf = { ema: 0, slow: 0 };
 function render() {
   g.setTransform(RS, 0, 0, RS, 0, 0);
-  if (state.screen === 'fight' && state.fight) { state.fight.draw(g); return; }
+  if (state.screen === 'fight' && state.fight) {
+    const t0 = performance.now();
+    state.fight.draw(g);
+    const dt = performance.now() - t0;
+    perf.ema = perf.ema ? perf.ema * 0.95 + dt * 0.05 : dt;
+    if (perf.ema > 13 && getQuality() > 0) {
+      if (++perf.slow > 90) { setQuality(getQuality() - 1); perf.slow = 0; perf.ema = 0; }
+    } else perf.slow = Math.max(0, perf.slow - 1);
+    return;
+  }
   // attract backdrop for menus
   backdrop.stage.draw(g, 0, 0, 0.3);
   if (state.screen === 'title') {
-    const a = ROSTER[(Math.floor(state.t / 300)) % 6], b = ROSTER[(Math.floor(state.t / 300) + 3) % 6];
+    const pool = ROSTER.filter((c) => !c.boss), k = Math.floor(state.t / 300);
+    const a = pool[k % pool.length], b = pool[(k + 5) % pool.length];
     g.fillStyle = 'rgba(0,0,0,.3)'; g.beginPath(); g.ellipse(330, GROUND + 2, 80, 12, 0, 0, 7); g.ellipse(950, GROUND + 2, 80, 12, 0, 0, 7); g.fill();
     const ph = state.t % 300;
     const pa = ph > 150 && ph < 175 ? POSES.jab : idlePose(state.t);
@@ -330,3 +347,4 @@ if (touch) document.querySelector('.press').textContent = 'TAP TO START';
 
 // Expose for quick debugging in the console.
 window.__kk = state;
+window.__kkQuality = getQuality;

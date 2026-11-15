@@ -31,7 +31,15 @@ export class FX {
   }
   stars(f) { this.p.push({ type: 'starpop', x: f.x, y: f.y - 240 * f.k, life: 20, t: 0 }); }
   text(x, y, text, color, scale = 1) { this.p.push({ type: 'text', x, y, vy: -1.2, text, color, scale, life: 55, t: 0, rot: (Math.random() - 0.5) * 0.4 }); }
-  slash(x, y) { this.p.push({ type: 'slash', x, y, a: Math.random() * Math.PI, life: 12, t: 0 }); }
+  slash(x, y, color) { this.p.push({ type: 'slash', x, y, a: Math.random() * Math.PI, life: 12, t: 0, color: color || '#e33b3b' }); }
+  explosion(x, y, s = 1) {
+    this.p.push({ type: 'boom', x, y, life: 34, t: 0, s });
+    for (let i = 0; i < 26 * s; i++) {
+      const a = Math.random() * Math.PI * 2, v = (3 + Math.random() * 9) * s;
+      this.p.push({ type: 'spark', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 3, g: 0.25, life: 18 + Math.random() * 14, t: 0, color: Math.random() < 0.5 ? '#ffcc33' : '#ff6a1a', drag: 0.94 });
+    }
+    for (let i = 0; i < 14 * s; i++) { const a = Math.random() * 7, v = 1 + Math.random() * 3 * s; this.p.push({ type: 'smoke', x: x + (Math.random() - 0.5) * 60 * s, y: y + (Math.random() - 0.5) * 40 * s, vx: Math.cos(a) * v, vy: -1 - Math.random() * 2, life: 50, t: 0, r: (18 + Math.random() * 20) * s, drag: 0.96 }); }
+  }
   crater(x) { this.under.push({ type: 'crater', x, life: 200, t: 0 }); this.dust(x, GROUND, 30); }
   whip(f, m) {
     const k = f.k;
@@ -73,6 +81,17 @@ export class FX {
           g.closePath(); g.globalAlpha = (1 - k) * 0.8; g.fill();
           break;
         }
+        case 'boom': {
+          const r = (40 + k * 170) * p.s;
+          g.globalCompositeOperation = 'lighter';
+          const rg = g.createRadialGradient(p.x, p.y, 2, p.x, p.y, r);
+          rg.addColorStop(0, `rgba(255,255,220,${1 - k})`); rg.addColorStop(0.35, `rgba(255,190,60,${0.9 * (1 - k)})`); rg.addColorStop(0.7, `rgba(230,70,20,${0.6 * (1 - k)})`); rg.addColorStop(1, 'rgba(120,20,0,0)');
+          g.fillStyle = rg; g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.fill();
+          g.globalCompositeOperation = 'source-over';
+          g.strokeStyle = `rgba(255,240,200,${0.8 * (1 - k)})`; g.lineWidth = 6 * (1 - k);
+          g.beginPath(); g.ellipse(p.x, p.y + 60 * p.s, r * 1.2, r * 0.25, 0, 0, 7); g.stroke();
+          break;
+        }
         case 'ring':
           g.strokeStyle = p.color; g.globalAlpha = 1 - k; g.lineWidth = 6 * (1 - k);
           g.beginPath(); g.ellipse(p.x, p.y, 20 + k * 90, (20 + k * 90) * 0.6, 0, 0, 7); g.stroke();
@@ -95,7 +114,7 @@ export class FX {
           break;
         case 'slash':
           g.translate(p.x, p.y); g.rotate(p.a); g.globalAlpha = 1 - k;
-          g.strokeStyle = '#fff'; g.lineWidth = 8 * (1 - k); g.shadowColor = '#e33b3b'; g.shadowBlur = 20;
+          g.strokeStyle = '#fff'; g.lineWidth = 8 * (1 - k); g.shadowColor = p.color || '#e33b3b'; g.shadowBlur = 20;
           g.beginPath(); g.moveTo(-120 * (0.3 + k), 0); g.lineTo(120 * (0.3 + k), 0); g.stroke();
           break;
         case 'whip': {

@@ -1,6 +1,6 @@
 // A match: two fighters, a stage, rounds, projectiles, supers, effects, HUD.
 import { Fighter } from './fighter.js';
-import { drawFighter, drawPortrait, POSES, mkPose, shade } from './rig.js';
+import { drawFighter, drawPortrait, POSES, mkPose, shade, walkPose } from './rig.js';
 import { StageRenderer, GROUND, W, H } from './stages.js';
 import { FX } from './fx.js';
 import { audio } from './audio.js';
@@ -126,7 +126,7 @@ export class Fight {
     att.hasHit = true;
     const powerDmg = (m.dmg || 40) * att.char.stats.power;
     const r = this.applyHit(att, def, { ...m, dmg: powerDmg }, { x: (Math.max(box[0], def.x - 30) + Math.min(box[1], def.x + 30)) / 2, y: (box[2] + box[3]) / 2 });
-    if (m.stamp && r === 'hit') this.fx.text(def.x, def.y - 240, 'REJECTED', '#d0262b', 1.4);
+    if (m.stamp && r === 'hit') this.fx.text(def.x, def.y - 240, m.spec?.stampText || 'REJECTED', '#d0262b', 1.4);
   }
 
   applyHit(att, def, hit, at) {
@@ -257,13 +257,18 @@ export class Fight {
       crack: { w: 70, h: 34, yh: 17, life: 120 },
       flash: { w: 110, h: 120, yh: 150, life: spec.life || 18 },
       ticket: { w: 44, h: 22, yh: 160, life: 120 },
+      bullet: { w: 30, h: 14, yh: 165, life: 90 },
+      briefcase: { w: 40, h: 30, yh: 190, vy: -10, grav: 0.42, life: 200 },
+      grenade: { w: 26, h: 26, yh: 190, vy: -11, grav: 0.45, life: 200 },
+      evidence: { w: 40, h: 32, yh: 150, life: 140 },
+      chi: { w: 70, h: 90, yh: 150, life: 140 },
     };
     const kd = kinds[spec.proj] || kinds.wave;
     this.proj.push({
       owner: f, kind: spec.proj, x: f.x + f.facing * 60, y: f.y - kd.yh * k,
       vx: spec.speed * f.facing, vy: kd.vy || 0, grav: kd.grav || 0, w: kd.w, h: kd.h,
       dmg: spec.dmg * f.char.stats.power, life: kd.life, t: 0, lvl: spec.low ? 'low' : 'mid',
-      stun: spec.stun, chip: 0.15, kd: spec.proj === 'cement', ...extra,
+      stun: spec.stun, chip: 0.15, kd: ['cement', 'briefcase', 'grenade'].includes(spec.proj), ...extra,
     });
     audio.play('shot');
   }
@@ -271,7 +276,8 @@ export class Fight {
   updateProjectiles() {
     for (const p of this.proj) {
       p.t++; p.x += p.vx; p.vy += p.grav; p.y += p.vy;
-      if (p.grav && p.y > GROUND - p.h / 2) { p.dead = true; this.fx.dust(p.x, GROUND, 10); if (p.kind === 'cement') { this.fx.dust(p.x, GROUND, 16); audio.play('land'); } }
+      if (p.grav && p.y > GROUND - p.h / 2) { p.dead = true; this.fx.dust(p.x, GROUND, 10); if (p.kind === 'cement') { this.fx.dust(p.x, GROUND, 16); audio.play('land'); }
+        if (p.kind === 'grenade' || p.kind === 'briefcase') { this.fx.explosion(p.x, GROUND - 30, 0.6); audio.play('heavy'); this.shake(6); } }
       if (p.x < -200 || p.x > W + 200 || p.t > p.life) p.dead = true;
       if (p.kind === 'crack' && p.t % 4 === 0) this.fx.dust(p.x, GROUND, 2);
       if (p.dead) continue;
@@ -284,7 +290,7 @@ export class Fight {
         if (r !== 'none') {
           if (p.pierce) { p.hitTargets = p.hitTargets || new Set(); p.hitTargets.add(target); }
           else p.dead = true;
-          if (p.kind === 'like' && r === 'hit') this.fx.text(p.x, p.y - 30, '+1 LIKE', '#ff4f7a', 0.8);
+          if (p.super && r === 'hit' && (p.kind === 'like' || p.hitText)) this.fx.text(p.x, p.y - 30, p.hitText || '+1 LIKE', p.kind === 'like' ? '#ff4f7a' : '#ffcc33', 0.8);
         }
       }
     }
@@ -356,7 +362,7 @@ export class Fight {
     this.excite = 1;
     this.sayLine(f, f.char.lines.super, 110);
     audio.play('super');
-    this.trapX = opp.x;
+    this.trapX = opp.x; this.blastX = opp.x;
     this.dark = 0;
   }
 
@@ -438,7 +444,7 @@ export class Fight {
         f.superPose = mkPose({ ...POSES.cast, uaF: 1.9, faF: 2.1, mouth: 0.6, eyes: 'wide' });
         if (t > 4 && t <= 74 && t % 5 === 0) {
           const last = t >= 72;
-          this.proj.push({ owner: f, kind: 'like', x: f.x + fwd * 60, y: f.y - (120 + Math.random() * 90) * f.k, vx: 15 * fwd, vy: (Math.random() - 0.5) * 1.2, grav: 0, w: 40, h: 40, dmg: f.char.super.dmg * f.char.stats.power / 14, life: 100, t: 0, lvl: 'mid', chip: 0.22, super: true, kd: last, kb: last ? 7 : 1.2 });
+          this.proj.push({ owner: f, kind: f.char.super.proj || 'like', hitText: f.char.super.hitText, x: f.x + fwd * 60, y: f.y - (120 + Math.random() * 90) * f.k, vx: 15 * fwd, vy: (Math.random() - 0.5) * 1.2, grav: 0, w: 40, h: 40, dmg: f.char.super.dmg * f.char.stats.power / 14, life: 100, t: 0, lvl: 'mid', chip: 0.22, super: true, kd: last, kb: last ? 7 : 1.2 });
         }
         if (t >= 86) this.endSuper(f);
         break;
@@ -455,6 +461,31 @@ export class Fight {
         if (t >= 100) this.endSuper(f);
         break;
       }
+      case 'blast': {
+        // A fuse is lit at the opponent's position (or the whole screen for
+        // walk-away blasts); step out of the warning zone to dodge it.
+        const sp = f.char.super;
+        if (t === 1) { this.blastX = sp.walkAway ? W / 2 : opp.x; }
+        if (sp.walkAway) {
+          // turn and stroll away from the opponent, cool as anything
+          f.facing = opp.x >= f.x ? -1 : 1;
+          f.superPose = mkPose({ ...walkPose(t * 0.12), head: -0.05, mouth: 0 });
+          if (t < 46) f.x = Math.max(60, Math.min(W - 60, f.x + f.facing * 1.4));
+        } else f.superPose = mkPose({ ...POSES.point, mouth: Math.sin(t * 0.4) > 0 ? 0.7 : 0.1 });
+        if (t < 46 && t % 5 === 0) this.fx.spark(this.blastX + (Math.random() - 0.5) * 60, GROUND - 10, '#ffcc33', 2, true);
+        if (t === 46) {
+          const r = sp.radius || 140;
+          this.fx.explosion(sp.walkAway ? opp.x : this.blastX, GROUND - 90, sp.walkAway ? 1.8 : 1.3);
+          if (sp.walkAway) { this.fx.explosion(W * 0.25, GROUND - 60, 1); this.fx.explosion(W * 0.75, GROUND - 60, 1); }
+          this.shake(18); audio.play('ko'); this.fx.flashScreen();
+          this.fx.text(opp.x, GROUND - 270, pick(sp.texts || ['KABOOM!']), '#ff6a1a', 1.5);
+          if (Math.abs(opp.x - this.blastX) < r && !['down', 'getup'].includes(opp.state) && opp.invuln <= 0) {
+            this.superHit(f, opp, 1, true, { launch: 17, at: { x: opp.x, y: opp.y - 120 } });
+          }
+        }
+        if (t >= 90) { this.endSuper(f); if (sp.walkAway) f.facing = opp.x >= f.x ? 1 : -1; }
+        break;
+      }
       case 'cinematic': {
         if (t === 1) {
           if (Math.abs(opp.x - f.x) < 520 && opp.invuln <= 0 && !['down', 'getup'].includes(opp.state)) { f.superPhase = 'go'; opp.setState('bound'); opp.stun = 999; opp.move = null; opp.vx = 0; }
@@ -468,11 +499,11 @@ export class Fight {
           f.facing = opp.x >= f.x ? 1 : -1;
           f.superPose = (t / 10) % 2 ? POSES.cross : POSES.highKick;
           this.fx.smoke(f.x, f.y - 100);
-          this.fx.slash(opp.x, opp.y - 140);
+          this.fx.slash(opp.x, opp.y - 140, f.char.super.slash);
           const last = t >= 70;
           if (last) opp.setState('hitstun');
           this.superHit(f, opp, 1 / 7, last, { unblockable: true, at: { x: opp.x, y: opp.y - 150 } });
-          this.fx.text(opp.x + (Math.random() - 0.5) * 120, opp.y - 230 - Math.random() * 40, pick(['RESHUFFLED', 'TRANSFERRED', 'DROPPED', 'NO TICKET']), '#e33b3b', 1.1);
+          this.fx.text(opp.x + (Math.random() - 0.5) * 120, opp.y - 230 - Math.random() * 40, pick(f.char.super.texts || ['RESHUFFLED', 'TRANSFERRED', 'DROPPED', 'NO TICKET']), f.char.color, 1.1);
         }
         if (t >= 92) { if (opp.state === 'bound') opp.setState('idle'); this.endSuper(f); }
         break;
@@ -532,6 +563,8 @@ export class Fight {
   draw(g) {
     const sx = (Math.random() - 0.5) * this.shakeAmt, sy = (Math.random() - 0.5) * this.shakeAmt;
     g.save();
+    const noir = this.f.some((f) => f.state === 'super' && f.char.super.gray && this.freeze <= 0);
+    if (noir) g.filter = 'grayscale(1) contrast(1.15)';
     this.stage.draw(g, sx, sy, this.excite);
     g.translate(sx, sy);
 
@@ -593,6 +626,12 @@ export class Fight {
       g.save(); g.globalAlpha = Math.min(1, p.t / 15); g.font = '30px Anton, Impact'; g.textAlign = 'center';
       g.lineWidth = 6; g.strokeStyle = '#000'; g.strokeText(p.text, p.x, p.y); g.fillStyle = p.color; g.fillText(p.text, p.x, p.y); g.restore();
     }
+    if (noir) {
+      g.filter = 'none';
+      g.save(); g.strokeStyle = 'rgba(220,225,235,.35)'; g.lineWidth = 1.2;
+      for (let i = 0; i < 90; i++) { const x = (i * 97 + this.frame * 13) % (W + 100) - 50, y = (i * 53 + this.frame * 22) % H; g.beginPath(); g.moveTo(x, y); g.lineTo(x - 6, y + 22); g.stroke(); }
+      g.restore();
+    }
     this.drawAnnouncer(g);
     if (this.cutin) this.drawCutin(g);
     this.fx.drawScreen(g);
@@ -604,16 +643,18 @@ export class Fight {
     const t = f.beam.t;
     g.save();
     const grad = g.createLinearGradient(0, y0, 0, y1);
-    grad.addColorStop(0, 'rgba(255,154,31,0)'); grad.addColorStop(0.3, 'rgba(255,200,80,.75)'); grad.addColorStop(0.5, 'rgba(255,255,230,.95)'); grad.addColorStop(0.7, 'rgba(255,200,80,.75)'); grad.addColorStop(1, 'rgba(255,154,31,0)');
+    const cyan = f.char.super.color === 'cyan';
+    const edge = cyan ? 'rgba(60,200,255,0)' : 'rgba(255,154,31,0)', mid = cyan ? 'rgba(120,230,255,.75)' : 'rgba(255,200,80,.75)', core = cyan ? 'rgba(235,255,255,.95)' : 'rgba(255,255,230,.95)';
+    grad.addColorStop(0, edge); grad.addColorStop(0.3, mid); grad.addColorStop(0.5, core); grad.addColorStop(0.7, mid); grad.addColorStop(1, edge);
     g.fillStyle = grad;
     const wob = Math.sin(t * 0.7) * 6;
     g.fillRect(Math.min(x0, x1), y0 - wob, Math.abs(x1 - x0), y1 - y0 + wob * 2);
-    const words = ['BHAIYON', 'AUR', 'BEHNO', 'VIKAS', 'NAYA', 'SAPNA', 'MERE', 'PYAARE', 'VOTERS', 'TAALIYAN', 'ZINDABAD', 'BLAH', 'BLAH', 'BLAH'];
+    const words = f.char.super.words || ['BHAIYON', 'AUR', 'BEHNO', 'VIKAS', 'NAYA', 'SAPNA', 'MERE', 'PYAARE', 'VOTERS', 'TAALIYAN', 'ZINDABAD', 'BLAH', 'BLAH', 'BLAH'];
     g.font = '26px Anton, Impact'; g.textAlign = 'center';
     for (let i = 0; i < 8; i++) {
       const prog = ((t * 14 + i * 140) % 1300);
       const x = f.x + f.facing * (60 + prog);
-      g.fillStyle = '#4a1a00'; g.fillText(words[(i + (t >> 4)) % words.length], x, (y0 + y1) / 2 + 9 + Math.sin(i * 2 + t * 0.3) * 18);
+      g.fillStyle = cyan ? '#003a4a' : '#4a1a00'; g.fillText(words[(i + (t >> 4)) % words.length], x, (y0 + y1) / 2 + 9 + Math.sin(i * 2 + t * 0.3) * 18);
     }
     g.restore();
   }
@@ -695,6 +736,42 @@ export class Fight {
         g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke();
         break;
       case 'horse': drawHorse(g, dir, p.t); break;
+      case 'bullet':
+        g.fillStyle = 'rgba(255,220,120,.35)'; g.fillRect(-dir * 46, -2, dir * 40, 4);
+        g.fillStyle = '#d9b44a'; g.beginPath(); g.ellipse(0, 0, 9, 4, 0, 0, 7); g.fill();
+        g.fillStyle = '#8a6a20'; g.fillRect(-dir * 9 - (dir < 0 ? 0 : 0), -4, dir * 4, 8);
+        break;
+      case 'briefcase':
+        g.rotate(p.t * 0.12 * dir);
+        g.fillStyle = '#4a2e16'; g.strokeStyle = '#1a0e06'; g.lineWidth = 2;
+        g.beginPath(); g.roundRect(-20, -14, 40, 28, 4); g.fill(); g.stroke();
+        g.fillStyle = '#d4af37'; g.fillRect(-14, -4, 6, 4); g.fillRect(8, -4, 6, 4);
+        g.strokeStyle = '#ffcc33'; g.lineWidth = 1.5; g.beginPath(); g.moveTo(0, -14); g.quadraticCurveTo(6, -24, 2, -30); g.stroke();
+        g.fillStyle = p.t % 6 < 3 ? '#fff4a0' : '#ff8a1a'; g.beginPath(); g.arc(2, -30, 3, 0, 7); g.fill();
+        break;
+      case 'grenade':
+        g.rotate(p.t * 0.2 * dir);
+        g.fillStyle = '#4b5320'; g.beginPath(); g.ellipse(0, 2, 11, 13, 0, 0, 7); g.fill();
+        g.strokeStyle = '#2a3010'; g.lineWidth = 1.2; for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(-10, i * 6 + 2); g.lineTo(10, i * 6 + 2); g.stroke(); }
+        g.fillStyle = '#7a7f84'; g.fillRect(-4, -15, 8, 6);
+        g.strokeStyle = '#9aa0a6'; g.lineWidth = 2; g.beginPath(); g.arc(7, -14, 4, 0, 7); g.stroke();
+        break;
+      case 'evidence':
+        g.rotate(Math.sin(p.t * 0.3) * 0.3);
+        g.fillStyle = '#f2efe6'; g.fillRect(-20, -16, 40, 32);
+        g.fillStyle = '#3a3a44'; g.fillRect(-16, -12, 32, 20);
+        g.fillStyle = '#c9c4b8'; g.beginPath(); g.arc(0, -4, 5, 0, 7); g.fill(); g.fillRect(-7, 2, 14, 6);
+        g.fillStyle = '#d0262b'; g.font = '9px Anton'; g.textAlign = 'center'; g.fillText('EXHIBIT A', 0, 14);
+        break;
+      case 'chi': {
+        g.globalCompositeOperation = 'lighter';
+        const rg = g.createRadialGradient(0, 0, 4, 0, 0, 46);
+        rg.addColorStop(0, 'rgba(255,255,255,.95)'); rg.addColorStop(0.4, 'rgba(90,210,255,.75)'); rg.addColorStop(1, 'rgba(90,210,255,0)');
+        g.fillStyle = rg; g.beginPath(); g.arc(0, 0, 46, 0, 7); g.fill();
+        g.globalCompositeOperation = 'source-over';
+        g.fillStyle = 'rgba(0,60,90,.8)'; g.font = '20px Anton'; g.textAlign = 'center'; g.fillText('HAI-YA!', 0, 7);
+        break;
+      }
     }
     g.restore();
   }
@@ -740,7 +817,7 @@ export class Fight {
       // portrait
       const pxc = left ? 34 : W - 34;
       g.save(); g.beginPath(); g.arc(pxc, top + 14, 30, 0, 7); g.fillStyle = shade(f.char.color, -0.5); g.fill(); g.clip();
-      drawPortrait(g, f.look, pxc - 2 * (left ? 1 : -1), top + 22, 90, { facing: left ? 1 : -1 });
+      g.drawImage(this.hudPortrait(f), pxc - 32, top + 14 - 32, 64, 64);
       g.restore();
       g.strokeStyle = f.char.color; g.lineWidth = 3; g.beginPath(); g.arc(pxc, top + 14, 30, 0, 7); g.stroke();
       // name
@@ -800,6 +877,17 @@ export class Fight {
     const tick = `● LIVE  ·  ${a.char.name} vs ${b.char.name}  ·  Opposition walks out  ·  Exit polls predict "something will happen"  ·  Chai rate unchanged  ·  `;
     const off = (this.frame * 1.2) % 900;
     g.fillText(tick + tick, -off, H - 4);
+  }
+
+  // The HUD portraits never change during a match, so render each once.
+  hudPortrait(f) {
+    if (f._hud) return f._hud;
+    const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+    const cg = c.getContext('2d'); cg.scale(2, 2);
+    const left = f.side === 0;
+    drawPortrait(cg, f.look, 32 - 2 * (left ? 1 : -1), 40, 90, { facing: left ? 1 : -1 });
+    f._hud = c;
+    return c;
   }
 
   drawAnnouncer(g) {

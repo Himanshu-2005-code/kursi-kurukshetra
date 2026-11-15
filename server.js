@@ -9,8 +9,8 @@ import { createClient } from '@libsql/client';
 
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)));
 const PORT = Number(process.env.PORT) || 3000;
-const CHARS = new Set(['bhashan', 'manifesto', 'babu', 'thekedar', 'yuva', 'dalbadlu', 'highcommand']);
-const STAGES = new Set(['house', 'rally', 'gully']);
+const CHARS = new Set(['bhashan', 'manifesto', 'babu', 'thekedar', 'yuva', 'dalbadlu', 'highcommand', 'don', 'inspector', 'gunslinger', 'noir', 'kungfu', 'explosion']);
+const STAGES = new Set(['house', 'rally', 'gully', 'filmset']);
 const MODES = new Set(['cpu', '2p']);
 const LEVELS = new Set(['easy', 'normal', 'hard', '']);
 

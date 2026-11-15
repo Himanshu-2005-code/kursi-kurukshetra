@@ -201,11 +201,71 @@ function paintGully() {
   return c;
 }
 
-const PAINTERS = { house: paintHouse, rally: paintRally, gully: paintGully };
+
+// ---------------- FILM SET ----------------
+function paintFilmSet() {
+  const c = off(); const g = c.getContext('2d');
+  const r = rnd(21);
+  // soundstage back wall
+  const wall = g.createLinearGradient(0, 0, 0, 470);
+  wall.addColorStop(0, '#0e0e14'); wall.addColorStop(1, '#2a2632');
+  g.fillStyle = wall; g.fillRect(0, 0, W, H);
+  // lighting grid
+  g.strokeStyle = '#3c3a46'; g.lineWidth = 5;
+  g.beginPath(); g.moveTo(0, 60); g.lineTo(W, 60); g.moveTo(0, 90); g.lineTo(W, 90); g.stroke();
+  g.lineWidth = 1.5; g.beginPath(); for (let x = 0; x < W; x += 30) { g.moveTo(x, 60); g.lineTo(x + 15, 90); g.lineTo(x + 30, 60); } g.stroke();
+  // painted backdrop: a dramatic sunset city skyline flat, propped up on braces
+  const bx = 300, bw = 680, by = 130, bh = 300;
+  const sky = g.createLinearGradient(0, by, 0, by + bh);
+  sky.addColorStop(0, '#2b1b4a'); sky.addColorStop(0.55, '#e0614a'); sky.addColorStop(1, '#f6c27a');
+  g.fillStyle = sky; g.fillRect(bx, by, bw, bh);
+  g.fillStyle = 'rgba(255,230,170,.9)'; g.beginPath(); g.arc(bx + bw * 0.62, by + bh * 0.62, 46, 0, 7); g.fill();
+  g.fillStyle = '#1c1428';
+  let x = bx;
+  while (x < bx + bw) { const w = 30 + r() * 50, h = 60 + r() * 140; g.fillRect(x, by + bh - h, w, h); x += w + 4; }
+  g.fillStyle = 'rgba(255,220,120,.6)';
+  for (let i = 0; i < 60; i++) g.fillRect(bx + r() * bw, by + bh - r() * 140, 3, 4);
+  g.strokeStyle = '#6b5a40'; g.lineWidth = 8; g.strokeRect(bx, by, bw, bh);
+  // braces behind the flat edges
+  g.strokeStyle = '#5a4630'; g.lineWidth = 6; g.beginPath(); g.moveTo(bx - 40, 470); g.lineTo(bx + 4, by + 40); g.moveTo(bx + bw + 40, 470); g.lineTo(bx + bw - 4, by + 40); g.stroke();
+  // green screen on the left
+  g.fillStyle = '#1f8a3a'; g.fillRect(30, 140, 220, 330);
+  g.fillStyle = 'rgba(0,0,0,.15)'; for (let i = 0; i < 6; i++) g.fillRect(30 + i * 37, 140, 2, 330);
+  g.fillStyle = '#f4f4f4'; g.font = '16px Teko, sans-serif'; g.textAlign = 'center'; g.fillText('VFX: ADD EXPLOSION HERE', 140, 300);
+  // director's chair on the right
+  g.save(); g.translate(1110, 470);
+  g.strokeStyle = '#3a2412'; g.lineWidth = 6; g.beginPath(); g.moveTo(-40, 0); g.lineTo(40, -90); g.moveTo(40, 0); g.lineTo(-40, -90); g.stroke();
+  g.fillStyle = '#111'; g.fillRect(-48, -96, 96, 12); g.fillRect(-48, -150, 96, 34);
+  g.fillStyle = '#ffcc33'; g.font = '20px Anton, Impact'; g.fillText('DIRECTOR', 0, -126);
+  g.restore();
+  // camera on a dolly
+  g.save(); g.translate(1020, 470);
+  g.fillStyle = '#2a2a30'; g.fillRect(-60, -20, 120, 20); g.fillStyle = '#111'; [-46, 46].forEach((wx) => { g.beginPath(); g.arc(wx, 0, 10, 0, 7); g.fill(); });
+  g.strokeStyle = '#3a3a42'; g.lineWidth = 6; g.beginPath(); g.moveTo(0, -20); g.lineTo(0, -120); g.stroke();
+  g.fillStyle = '#1a1a1e'; g.fillRect(-46, -170, 80, 50); g.fillStyle = '#333'; g.fillRect(34, -158, 34, 26);
+  g.fillStyle = '#111'; g.beginPath(); g.arc(-24, -184, 20, 0, 7); g.arc(14, -184, 20, 0, 7); g.fill();
+  g.fillStyle = '#e33b3b'; g.beginPath(); g.arc(-36, -160, 4, 0, 7); g.fill();
+  g.restore();
+  // studio floor with tape marks
+  const fl = g.createLinearGradient(0, 470, 0, H);
+  fl.addColorStop(0, '#3a3540'); fl.addColorStop(1, '#1c1a20');
+  g.fillStyle = fl; g.fillRect(0, 470, W, H);
+  g.strokeStyle = 'rgba(255,255,255,.08)'; g.lineWidth = 1;
+  for (let i = 0; i < 12; i++) { g.beginPath(); g.moveTo(i * 120, 470); g.lineTo(i * 160 - 240, H); g.stroke(); }
+  ['#ff4f7a', '#ffcc33', '#4fc3ff'].forEach((col, i) => { g.fillStyle = col; const tx = 360 + i * 280; g.fillRect(tx - 14, 600, 28, 5); g.fillRect(tx - 2.5, 588, 5, 28); });
+  // cables
+  g.strokeStyle = '#111'; g.lineWidth = 4;
+  for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(0, 520 + i * 40); g.bezierCurveTo(300, 560 + i * 30, 700, 500 + i * 50, W, 540 + i * 30); g.stroke(); }
+  vignette(g);
+  return c;
+}
+
+const PAINTERS = { house: paintHouse, rally: paintRally, gully: paintGully, filmset: paintFilmSet };
 export const STAGES = [
   { id: 'house', name: 'THE HOUSE', sub: 'SESSION STALLED', music: 100 },
   { id: 'rally', name: 'RALLY MAIDAN', sub: 'NIGHT RALLY · FREE CHAI', music: 112 },
   { id: 'gully', name: 'GULLY CHAURAHA', sub: 'POTHOLE JUNCTION', music: 106 },
+  { id: 'filmset', name: 'FILM SET', sub: 'TAKE 47 · ROLLING', music: 118 },
 ];
 
 export class StageRenderer {
@@ -248,6 +308,25 @@ export class StageRenderer {
       const bob = Math.sin(this.t * (0.15 + excite * 0.2)) * (3 + excite * 8);
       g.drawImage(this.rallyCrowd, -off, 360 + bob);
       g.drawImage(this.rallyCrowd, -off + 1500, 360 + bob);
+    } else if (this.id === 'filmset') {
+      g.save(); g.globalCompositeOperation = 'lighter';
+      [[200, 0.02], [1080, -0.02]].forEach(([lx, sp], i) => {
+        const a = Math.sin(this.t * 0.01 + i * 2) * 0.35;
+        const flick = 0.12 + 0.04 * Math.sin(this.t * 0.7 + i) + excite * 0.06;
+        const lg = g.createLinearGradient(lx, 70, lx, 640); lg.addColorStop(0, `rgba(255,245,220,${flick + 0.08})`); lg.addColorStop(1, 'rgba(255,245,220,0)');
+        g.fillStyle = lg; g.beginPath(); g.moveTo(lx - 20, 80); g.lineTo(lx + 20, 80); g.lineTo(lx + Math.sin(a) * 500 + 160, 660); g.lineTo(lx + Math.sin(a) * 500 - 160, 660); g.closePath(); g.fill();
+      });
+      g.restore();
+      [200, 1080].forEach((lx) => { g.fillStyle = '#1a1a1e'; g.fillRect(lx - 24, 64, 48, 26); g.fillStyle = '#fff8d8'; g.fillRect(lx - 18, 86, 36, 4); });
+      // clapboard snaps every few seconds
+      const ph = this.t % 360, open = ph < 330 ? 0.5 : Math.max(0, 0.5 - (ph - 330) * 0.05);
+      g.save(); g.translate(640, 130);
+      g.fillStyle = '#111'; g.fillRect(-60, 0, 120, 70);
+      g.fillStyle = '#fff'; g.font = '14px Teko, sans-serif'; g.textAlign = 'left'; g.fillText('SCENE 12 · TAKE 47', -52, 26); g.fillText('KURSI KURUKSHETRA', -52, 46); g.fillText('DIR: ???', -52, 64);
+      g.rotate(-open);
+      g.fillStyle = '#111'; g.fillRect(-60, -16, 120, 16);
+      g.fillStyle = '#fff'; for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(-60 + i * 22, -16); g.lineTo(-50 + i * 22, -16); g.lineTo(-40 + i * 22, 0); g.lineTo(-50 + i * 22, 0); g.closePath(); g.fill(); }
+      g.restore();
     } else if (this.id === 'gully') {
       // a wandering cow, the true ruler of the road
       const cw = this.cow;

@@ -16,6 +16,19 @@ Play vs CPU (Easy / Normal / Hard), or local 2-player on one keyboard. It works 
 | Dal-Badlu Lal | Member of every party | **Horse Trading**: a stampede |
 | High Command *(boss, unlocks after your first CPU win)* | Decides everything, says nothing | **Cabinet Reshuffle** |
 
+### Filmy Mode
+
+Original fighters built on movie genres and tropes, not on any actor or film character. They live in their own tab on the select screen and can fight the netas.
+
+| Fighter | Genre | Super |
+|---|---|---|
+| Don Dhuaandhaar | Seventies smuggler boss | **Den Ka Dhamaka**: the whole den goes up |
+| Inspector Ulta-Seedha | Loud cop hero | **Dhishoom Protocol**: slow-motion beatdown |
+| The Gunslinger | Western | **High Noon**: a hail of bullets |
+| Detective Noir | Trench-coat noir | **The Big Reveal**: the stage turns black-and-white in the rain |
+| Kung-Fu Uncle | Old kung-fu master | **Thousand-Palm Wave** |
+| Explosion Man | Action hero | **Cool Guys Don't Look**: walks away as the stage explodes |
+
 Each character has three specials, intro, taunt, win and lose dialogue (optionally spoken aloud), and a post-match "Kursi Times" headline.
 
 ## Controls
@@ -35,12 +48,12 @@ Each character has three specials, intro, taunt, win and lose dialogue (optional
 
 Plain HTML, CSS and JavaScript (ES modules). There's no build step and there are no image or audio assets.
 
-- `src/rig.js`: procedural character renderer. Characters are skeletons with joint angles plus a "look" (skin, clothes, hair, face). Each one is drawn with cylindrical shading, cloth creases, cast shadows, and a per-fighter lighting pass with key light, ground occlusion and rim light.
+- `src/rig.js`: procedural character renderer, with adaptive quality that steps the lighting down on slow devices. Characters are skeletons with joint angles plus a "look" (skin, clothes, hair, face). Each one is drawn with cylindrical shading, cloth creases, cast shadows, and a per-fighter lighting pass with key light, ground occlusion and rim light.
 - `src/roster.js`: the cast. Appearance, stats, specials, super and dialogue are all data.
 - `src/fighter.js`: movement, state machine, normals, motion-input specials, cooldowns.
 - `src/fight.js`: rounds, hit detection, blocking, projectiles, the seven supers, ballot pickups, HUD, speech bubbles, super cut-ins.
 - `src/ai.js`: CPU opponent that reacts with a delay and has to perform the same motion inputs as a player.
-- `src/stages.js`: three stages (The House, Rally Maidan, Gully Chauraha).
+- `src/stages.js`: four stages (The House, Rally Maidan, Gully Chauraha, Film Set).
 - `src/audio.js`: synthesized SFX and dhol music (WebAudio), plus voice lines via speech synthesis.
 
 - `server.js`: small Node server that serves the game and a results API backed by **Turso** (libSQL). Every finished match is recorded, and the title screen's **Neta Rankings** shows wins, losses and best combo per neta, plus the latest headlines.

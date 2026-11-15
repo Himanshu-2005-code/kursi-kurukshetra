@@ -100,7 +100,7 @@ export class CPU {
     // super
     if (me.meter >= 1000 && R() < L.superP * 0.15 && !['down', 'getup', 'knockdown'].includes(opp.state)) {
       const kind = me.char.super.kind;
-      const ranged = ['beam', 'rain', 'stream', 'stampede', 'trap'].includes(kind);
+      const ranged = ['beam', 'rain', 'stream', 'stampede', 'trap', 'blast'].includes(kind);
       if (ranged || dist < 300) { this.press(me, '', 'super'); return; }
     }
 
