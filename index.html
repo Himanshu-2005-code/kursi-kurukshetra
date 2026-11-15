@@ -27,6 +27,7 @@
         <div class="title-menu">
           <button class="btn big" data-action="vs-cpu">⚔ VS CPU</button>
           <button class="btn big" data-action="vs-2p">👥 LOCAL 2 PLAYER</button>
+          <button class="btn ghost" data-action="rankings">NETA RANKINGS</button>
           <button class="btn ghost" data-action="how">CONTROLS</button>
         </div>
         <div class="press">PRESS ENTER / TAP TO START</div>
@@ -94,6 +95,17 @@
           </div>
         </div>
         <button class="btn" data-action="close-how">GOT IT</button>
+      </div>
+    </section>
+
+    <!-- RANKINGS -->
+    <section id="screen-rankings" class="screen modal">
+      <div class="panel rankings">
+        <h2>NETA RANKINGS</h2>
+        <p class="dim" id="rank-sub">Counting votes…</p>
+        <div class="rank-wrap"><table class="rank-table" id="rank-table"></table></div>
+        <div class="rank-news" id="rank-news"></div>
+        <button class="btn" data-action="close-rankings">BACK</button>
       </div>
     </section>
 

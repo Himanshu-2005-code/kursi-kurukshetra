@@ -46,12 +46,14 @@ function showModal(id, on) { document.getElementById('screen-' + id).classList.t
 document.addEventListener('click', (e) => {
   audio.unlock();
   const a = e.target.closest('[data-action]')?.dataset.action;
-  if (!a) { if (state.screen === 'title' && !e.target.closest('.title-menu')) goSelect('cpu'); return; }
+  if (!a) { if (state.screen === 'title' && !e.target.closest('.title-menu') && !e.target.closest('.screen.modal')) goSelect('cpu'); return; }
   audio.play('select');
   switch (a) {
     case 'vs-cpu': goSelect('cpu'); break;
     case 'vs-2p': goSelect('2p'); break;
     case 'how': showModal('how', true); break;
+    case 'rankings': openRankings(); break;
+    case 'close-rankings': showModal('rankings', false); break;
     case 'close-how': showModal('how', false); break;
     case 'back': show('title'); break;
     case 'fight': startFight(); break;
@@ -229,6 +231,12 @@ function onMatchEnd(res) {
   if (res.stats.timeout && res.winner) head = `Time runs out! Exit poll declares ${W_} winner on technicality`;
   if (res.stage === 'gully' && Math.random() < 0.4 && res.winner) head = `Stray cow halts traffic as ${W_} flattens ${L_} at pothole junction`;
   $('#res-head').textContent = head;
+  postResult({
+    winner: res.winner?.char.id ?? null, loser: res.loser?.char.id ?? null,
+    mode: state.mode, level: state.mode === 'cpu' ? state.level : '', stage: res.stage,
+    rounds: res.fighters[0].wins + res.fighters[1].wins, maxCombo: Math.max(...res.stats.maxCombo),
+    perfect: res.stats.perfect, playerWon: state.mode === 'cpu' ? youWon : null, headline: head,
+  });
   const combo = res.winner ? res.stats.maxCombo[res.winner.side] : 0;
   const supers = res.stats.supers[0] + res.stats.supers[1];
   $('#res-body').innerHTML = `
@@ -238,6 +246,38 @@ function onMatchEnd(res) {
   $('#res-win').textContent = res.winner ? (state.mode === 'cpu' ? (youWon ? 'YOU WIN!' : 'YOU LOSE!') : `${res.winner.side === 0 ? 'P1' : 'P2'} WINS!`) : 'DRAW';
   $('#res-quote').textContent = res.winner ? `${res.winner.char.name}: "${pick(res.winner.char.lines.win)}"` : '';
   setTimeout(() => showModal('results', true), 400);
+}
+
+// ---------- online results (Turso via the server) ----------
+// The static/offline build has no server; these calls then fail quietly.
+function postResult(body) {
+  try {
+    fetch('/api/matches', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), keepalive: true }).catch(() => {});
+  } catch {}
+}
+
+async function openRankings() {
+  showModal('rankings', true);
+  const sub = $('#rank-sub'), table = $('#rank-table'), news = $('#rank-news');
+  sub.textContent = 'Counting votes…'; table.innerHTML = ''; news.innerHTML = '';
+  try {
+    const r = await fetch('/api/leaderboard', { cache: 'no-store' });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    sub.textContent = data.total ? `${data.total} match${data.total === 1 ? '' : 'es'} counted across all players` : 'No matches counted yet. Win one and top the table.';
+    const byId = Object.fromEntries(ROSTER.map((c) => [c.id, c]));
+    const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+    table.innerHTML = '<tr><th>#</th><th>NETA</th><th>WINS</th><th>LOSSES</th><th>WIN %</th><th>BEST COMBO</th></tr>' +
+      data.rows.map((row, i) => {
+        const c = byId[row.id]; if (!c) return '';
+        const played = row.wins + row.losses;
+        const pct = played ? Math.round((row.wins / played) * 100) + '%' : '–';
+        return `<tr><td class="pos">${i + 1}</td><td><span class="swatch" style="background:${c.color}"></span>${esc(c.name)}</td><td>${row.wins}</td><td>${row.losses}</td><td>${pct}</td><td>${row.bestCombo || '–'}</td></tr>`;
+      }).join('');
+    news.innerHTML = data.recent.map((n) => `<div>${esc(n.headline)}</div>`).join('');
+  } catch {
+    sub.textContent = 'Rankings are available on the online version of the game.';
+  }
 }
 
 // ---------- loop ----------

@@ -2,3 +2,5 @@
 node_modules/
 *.log
 _artifact.html
+local.db
+local.db-*

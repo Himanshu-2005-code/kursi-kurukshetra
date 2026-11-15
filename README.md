@@ -43,16 +43,37 @@ Plain HTML, CSS and JavaScript (ES modules). There's no build step and there are
 - `src/stages.js`: three stages (The House, Rally Maidan, Gully Chauraha).
 - `src/audio.js`: synthesized SFX and dhol music (WebAudio), plus voice lines via speech synthesis.
 
+- `server.js`: small Node server that serves the game and a results API backed by **Turso** (libSQL). Every finished match is recorded, and the title screen's **Neta Rankings** shows wins, losses and best combo per neta, plus the latest headlines.
+
 ## Run locally
 
 ```bash
-python3 -m http.server 8000
-# open http://localhost:8000
+npm install
+npm start          # http://localhost:3000, uses a local SQLite file (local.db)
 ```
 
-## Deploy
+To use Turso locally, set `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` first.
 
-It's a static site. On GitHub Pages: **Settings → Pages → Deploy from branch → `main` / root**. It also works on Render (Static Site), Netlify, or Vercel with no build command.
+## API
+
+| Method | Path | What it does |
+|---|---|---|
+| `GET` | `/api/health` | Health check for Render |
+| `POST` | `/api/matches` | Record a finished match (validated, rate-limited per IP) |
+| `GET` | `/api/leaderboard` | Wins and losses per neta, best combo, latest headlines |
+
+## Deploy (Render + Turso)
+
+1. **Turso:** create a database and an auth token:
+   ```bash
+   turso db create kursi-kurukshetra
+   turso db show kursi-kurukshetra --url      # TURSO_DATABASE_URL
+   turso db tokens create kursi-kurukshetra   # TURSO_AUTH_TOKEN
+   ```
+2. **Render:** New → Blueprint → pick this repo. `render.yaml` sets up a free Node web service. Paste the two Turso values when Render asks for the environment variables.
+3. The table is created automatically on first start.
+
+The game files also work as a plain static site; only the rankings need the server.
 
 ---
 

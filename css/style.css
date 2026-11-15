@@ -156,3 +156,17 @@ html, body { margin: 0; height: 100%; background: #0b0604; overflow: hidden; col
 
 /* pause button sits below the timer so it never covers the round label */
 .tpause { top: auto; margin-top: 0; top: calc(env(safe-area-inset-top, 0px) + 15.5vh); font-size: 3vh; padding: 0.2vh 1.6vh; }
+
+/* rankings */
+.rankings { width: min(760px, 94vw); }
+.rank-wrap { width: 100%; overflow-x: auto; }
+.rank-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 15px; }
+.rank-table th { font-family: Teko, sans-serif; font-weight: 600; letter-spacing: 2px; color: var(--gold); text-align: right; padding: 4px 8px; border-bottom: 1px solid rgba(255,200,120,.3); }
+.rank-table th:nth-child(-n+2) { text-align: left; }
+.rank-table td { padding: 5px 8px; text-align: right; border-bottom: 1px solid rgba(255,255,255,.06); }
+.rank-table td:nth-child(-n+2) { text-align: left; }
+.rank-table td.pos { font-family: Anton, Impact, sans-serif; color: var(--gold); width: 2.5em; }
+.rank-table .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 8px; }
+.rank-news { width: 100%; text-align: left; font-family: Georgia, serif; font-size: 13px; display: flex; flex-direction: column; gap: 4px; }
+.rank-news div { background: var(--paper); color: #1d140c; padding: 5px 10px; border-radius: 2px; }
+@media (max-height: 520px) { .rank-table { font-size: 12px; } .rank-news { display: none; } }
