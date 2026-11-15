@@ -113,3 +113,46 @@ html, body { margin: 0; height: 100%; background: #0b0604; overflow: hidden; col
   .title-menu { margin-top: 12px; }
   .roster-grid { gap: 5px; }
 }
+
+/* ---------- phones in landscape (short screens) ---------- */
+@media (max-height: 520px) {
+  .title-kicker { font-size: 4.5vh; letter-spacing: 4px; }
+  .logo span { font-size: 22vh; }
+  .logo .logo-2 { font-size: 13vh; }
+  .title-sub { font-size: 5.5vh; letter-spacing: 6px; margin-top: 1vh; }
+  .title-menu { margin-top: 3vh; gap: 10px; }
+  .title-menu .btn { font-size: 5.5vh; padding: 0.6vh 3.5vh 0; }
+  .press { margin-top: 2vh; font-size: 4.5vh; }
+  .fine { margin-top: 1vh; font-size: 10px; }
+
+  #screen-select { padding: 1vh max(12px, env(safe-area-inset-right, 0px)) 1vh max(12px, env(safe-area-inset-left, 0px)); }
+  .select-head h2 { font-size: 7vh; }
+  .select-mode { font-size: 4.5vh; }
+  .select-body { gap: 1.2vw; margin-top: 0.5vh; grid-template-columns: 1fr 1.7fr 1fr; }
+  .pv-quote { display: none; }
+  .pv-name { font-size: 6vh; }
+  .pv-title { font-size: 3.6vh; letter-spacing: 1px; }
+  .pv-tag { font-size: 5vh; }
+  .grid-col { gap: 1.2vh; overflow-y: auto; }
+  .roster-grid { gap: 5px; }
+  .cell { aspect-ratio: 1.15 / 1; }
+  .cell .nm { font-size: 3.4vh; }
+  .opt { font-size: 4.2vh; gap: 6px; }
+  .opt > span { width: auto; min-width: 9vh; }
+  .seg { gap: 4px; flex-wrap: wrap; }
+  .opt { align-items: flex-start; }
+  .opt > span { padding-top: 0.4vh; }
+  .seg button { font-size: 3.8vh; padding: 0.3vh 1.6vh 0; white-space: nowrap; }
+  .select-actions .btn { font-size: 5vh; padding: 0.6vh 3vh 0; }
+  .select-actions .btn.big { font-size: 6.5vh; }
+  .hint { display: none; }
+  .panel { padding: 3vh 4vh; gap: 1.5vh; }
+  .panel h2 { font-size: 7vh; }
+  .panel .cols { font-size: 11px; gap: 3vh; }
+  .paper-body { font-size: 11px; }
+  .paper-head { font-size: 5.5vh; }
+  .res-win { font-size: 6vh; margin-top: 1vh; }
+}
+
+/* pause button sits below the timer so it never covers the round label */
+.tpause { top: auto; margin-top: 0; top: calc(env(safe-area-inset-top, 0px) + 15.5vh); font-size: 3vh; padding: 0.2vh 1.6vh; }

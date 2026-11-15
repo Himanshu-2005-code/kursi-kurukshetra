@@ -765,7 +765,8 @@ export class Fight {
         g.fillText(['↘P', '↘K', '↙P'][i], cx, cy + 4);
       });
       // meter
-      const mW = 300, mx = left ? 70 : W - 70 - mW, my = H - 44;
+      // on phones the joystick and buttons own the bottom corners, so the meter moves up under the name
+      const mW = this.touchLayout ? 260 : 300, mx = left ? 70 : W - 70 - mW, my = this.touchLayout ? top + barH + 86 : H - 44;
       g.fillStyle = 'rgba(0,0,0,.6)'; g.beginPath(); g.roundRect(mx - 3, my - 3, mW + 6, 20, 5); g.fill();
       const full = f.meter >= 1000;
       const mg = g.createLinearGradient(mx, 0, mx + mW, 0);

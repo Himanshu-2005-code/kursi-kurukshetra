@@ -187,6 +187,7 @@ function startFight() {
     chars: [c1, c2], looks, pads: state.pads, stage: STAGES[state.stage].id,
     cpu: state.cpus, onEnd: onMatchEnd,
   });
+  state.fight.touchLayout = touch;
   state.paused = false;
   showModal('pause', false); showModal('results', false);
   show('fight');
