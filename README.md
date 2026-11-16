@@ -31,6 +31,16 @@ Original fighters built on movie genres and tropes, not on any actor or film cha
 
 Each character has three specials, intro, taunt, win and lose dialogue (optionally spoken aloud), and a post-match "Kursi Times" headline.
 
+## Design decisions
+
+- **Original characters only.** Every fighter is an invented archetype (the orator, the bureaucrat, the turncoat, the action hero) rather than a real politician, actor or film character. The satire targets types of behaviour, so it lands with anyone and keeps the project free of likeness and copyright issues.
+- **Everything is code, no assets.** Characters are drawn procedurally from a skeleton plus appearance data, stages are painted on canvas, and all sound is synthesized with WebAudio. Adding a fighter means adding one entry to `src/roster.js`.
+- **Fixed-timestep simulation.** The game logic runs at a constant 60 ticks per second, separate from rendering, so gameplay behaves the same on fast and slow devices.
+- **Specials are earned.** Specials need quarter-circle motions and have a cooldown, so they can't be spammed.
+- **Comeback mechanics.** Taking damage fills the super meter faster than dealing it, more so when you're behind, and ballot boxes drop closer to the losing player, so matches stay close.
+- **Fair CPU.** The AI reacts to a slightly delayed view of the opponent and has to perform the same motion inputs as a human, with difficulty controlling its reaction time and accuracy.
+- **Adaptive quality.** The renderer measures its own frame time and steps down the lighting on slow phones to keep play smooth.
+
 ## Controls
 
 | | Player 1 | Player 2 (local) |
